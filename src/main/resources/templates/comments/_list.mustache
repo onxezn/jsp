@@ -1,0 +1,115 @@
+<div id = "comments-list">
+    {{#commentDtos}}
+        <div class="card m-2" id="comments-{{id}}">
+            <div class="card-header">
+                {{nickname}}
+                <!-- Button trigger modal -->
+                <button type="button"
+                        class="btn btn-sm btn-primary"
+                        data-bs-toggle="modal"
+                        data-bs-target="#comment-edit-modal"
+                        data-bs-id="{{id}}"
+                        data-bs-nickname="{{nickname}}"
+                        data-bs-body="{{body}}"
+                        data-bs-article_id="{{articleId}}">Edit</button>
+            </div>
+            <div class="card-body">
+                {{body}}
+            </div>
+        </div>
+    {{/commentDtos}}
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="comment-edit-modal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Comment Edit</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <!-- 닉네임 입력 -->
+                    <div class="mb-3">
+                        <label class="form-label">nickname</label>
+                        <input class="form-control form-control-sm" id="edit-comment-nickname">
+                    </div>
+                    <!-- 본문 입력 -->
+                    <div class="mb-3">
+                        <label class="form-label">content</label>
+                        <textarea class="form-control form-control-sm" rows="3" id="edit-comment-body"></textarea>
+                    </div>
+                    <input type="hidden" id="edit-comment-id">
+                    <input type="hidden" id="edit-comment-article-id">
+
+
+                    <button type="button" class="btn btn-outline-primary btn-sm" id="comment-update-btn">comment edit complete</button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<script> // 이건 내용을 가져오는... 코드였음.
+{
+    // modal 가져옴.
+    const commentEditModal = document.querySelector("#comment-edit-modal");
+
+    // 이벤트감지
+    commentEditModal.addEventListener('show.bs.modal', event => {
+        // 트리거버튼 선택
+        const triggerBtn = event.relatedTarget;
+
+        // 데이터 가져오기
+        const id = triggerBtn.getAttribute("data-bs-id");
+        const nickname = triggerBtn.getAttribute("data-bs-nickname");
+        const body = triggerBtn.getAttribute("data-bs-body");
+        const articleId = triggerBtn.getAttribute("data-bs-article-id");
+
+        // 데이터 반영
+        document.querySelector("#edit-comment-nickname").value = nickname;
+        document.querySelector("#edit-comment-body").value = body;
+        document.querySelector("#edit-comment-id").value = id;
+        document.querySelector("#edit-comment-article-id").value = articleId;
+
+
+    })
+
+}
+
+
+{
+    const commentUpdateBtn = document.querySelector("#comment-update-btn");
+
+    commentUpdateBtn.addEventListener("click", function() {
+        const comment = {
+            id : document.querySelector("#edit-comment-id").value,
+            nickname : document.querySelector("#edit-comment-nickname").value,
+            body : document.querySelector("#edit-comment-body").value,
+            article_id : document.querySelector("#edit-comment-article-id").value
+        }
+        console.log(comment);
+
+        // fetch() - Talend API 요청을 JavaScript로 보내준다.
+        const url = "/api/comments/" + comment.id;
+        fetch(url, {
+            method : "PATCH",    // PATCH 요청
+            body : JSON.stringify(comment),  // comment js객체를 JSON형태로 변경하여 보냄.
+            headers  : {  // body의 형태가 json형태라는 것을 알려주는 것.
+                "Content-Type" : "application/json"
+            }
+        }).then(response => {
+            // http 응답 코드에 따른 메시지 출력
+            const msg = (response.ok) ? "success" : "failed";
+            alert(msg);
+            // 현재 페이지 새로고침
+            window.location.reload();
+        })
+    })
+}
+
+
+</script>
